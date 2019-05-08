@@ -20,4 +20,8 @@ public class EPJson {
         }
         return gson.toJsonTree(map);
     }
+
+    public static <T> T objectAs(String object, Class<T> T){
+        return gson.fromJson(object, T);
+    }
 }

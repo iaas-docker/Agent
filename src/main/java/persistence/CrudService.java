@@ -2,8 +2,9 @@ package persistence;
 
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 import com.mongodb.WriteResult;
-import com.mongodb.client.MongoDatabase;
+import io.github.cdimascio.dotenv.Dotenv;
 import models.IdObject;
 import org.bson.types.ObjectId;
 import org.jongo.Jongo;
@@ -12,8 +13,9 @@ import util.EPJson;
 
 public class CrudService<T extends IdObject> {
 
-    private static DB db = new MongoClient().getDB("");
-    private Jongo jongo = new Jongo(db);
+    public final static Dotenv dotenv = Dotenv.load();
+    private static DB db = new MongoClient(new MongoClientURI(dotenv.get("MORGO_URL"))).getDB("heroku_35k6mstx");
+    private static Jongo jongo = new Jongo(db);
 
     private Class<T> clazz;
     private String collectionName;
@@ -32,7 +34,7 @@ public class CrudService<T extends IdObject> {
      */
     public MongoCollection collection() {
         if (collection == null)
-            collection = jongo.getCollection("");
+            collection = jongo.getCollection(collectionName);
         return collection;
     }
 
@@ -97,5 +99,9 @@ public class CrudService<T extends IdObject> {
         System.out.println("deleteQuery = " + deleteQuery);
         WriteResult res = collection().remove(deleteQuery);
         return res.getN();
+    }
+
+    public static boolean testConnection(){
+        return db.collectionExists("users");
     }
 }

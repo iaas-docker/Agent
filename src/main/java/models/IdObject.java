@@ -1,5 +1,6 @@
 package models;
 
+import com.google.gson.annotations.SerializedName;
 import org.jongo.marshall.jackson.oid.MongoId;
 import org.jongo.marshall.jackson.oid.MongoObjectId;
 
@@ -7,6 +8,7 @@ public class IdObject {
 
     @MongoId
     @MongoObjectId
+    @SerializedName("_id")
     protected String id;
 
     public String getId() {
