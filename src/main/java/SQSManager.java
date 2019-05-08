@@ -6,6 +6,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
+import software.amazon.awssdk.services.sqs.model.ReceiveMessageResponse;
 
 import java.util.List;
 
@@ -30,15 +31,21 @@ public class SQSManager {
         this.queueUrl = queueUrl;
     }
 
-    public void receive(){
+    public Message receiveSingleMessage(){
         ReceiveMessageRequest receiveMessageRequest = ReceiveMessageRequest.builder()
                 .queueUrl(this.queueUrl)
                 .maxNumberOfMessages(1)
                 .visibilityTimeout(10)
+                .attributeNamesWithStrings("MessageGroupId")
                 .build();
 
+        ReceiveMessageResponse ss = sqsClient.receiveMessage(receiveMessageRequest);
         List<Message> messages= sqsClient.receiveMessage(receiveMessageRequest).messages();
 
-        logger.info("Got {} messages.", messages.size());
+        if (messages.size() == 1){
+            return messages.get(0);
+        } else {
+            return null;
+        }
     }
 }
