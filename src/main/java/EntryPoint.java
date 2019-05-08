@@ -10,6 +10,11 @@ public class EntryPoint {
     public final static Dotenv dotenv = Dotenv.load();
 
     public static void main(String[] args) {
+        initializeAgent();
+
+    }
+
+    private static void initializeAgent(){
         try {
             //Validate docker is running
             DockerManager dockerManager = new DockerManager();
@@ -19,7 +24,8 @@ public class EntryPoint {
             logger.info("Registry contacted successfully");
 
             //Create connection to the queue
-
+            SQSManager sqsManager = new SQSManager(dotenv.get("QUEUE_URL"));
+            logger.info("Connected successfully to queue");
 
             while (true) {
                 try {
@@ -32,7 +38,5 @@ public class EntryPoint {
         } catch (Exception ex) {
             logger.error("Error during start up", ex);
         }
-
-
     }
 }
