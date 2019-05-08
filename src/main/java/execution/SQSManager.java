@@ -1,3 +1,6 @@
+package execution;
+
+import init.EntryPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -7,14 +10,14 @@ import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageResponse;
+import util.Conf;
 
 import java.util.List;
 
 public class SQSManager {
 
-    private static StaticCredentialsProvider awsCreds = StaticCredentialsProvider
-            .create(AwsBasicCredentials
-                    .create(EntryPoint.dotenv.get("AWS_ACCESS_KEY"), EntryPoint.dotenv.get("AWS_ACCESS_SECRET")));
+    private static StaticCredentialsProvider awsCredentials = StaticCredentialsProvider
+            .create(AwsBasicCredentials.create(Conf.AWS_ACCESS_KEY, Conf.AWS_ACCESS_SECRET));
 
     final static Logger logger = LoggerFactory.getLogger(SQSManager.class);
 
@@ -26,7 +29,7 @@ public class SQSManager {
         sqsClient = SqsClient
                 .builder()
                 .region(Region.SA_EAST_1)
-                .credentialsProvider(awsCreds)
+                .credentialsProvider(awsCredentials)
                 .build();
         this.queueUrl = queueUrl;
     }

@@ -1,32 +1,12 @@
-
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+package execution;
 
 import auth.PortusAuthSupplier;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.ProgressHandler;
-import com.spotify.docker.client.DockerClient.ExecStartParameter;
-import com.spotify.docker.client.DockerClient.ListContainersParam;
-import com.spotify.docker.client.auth.FixedRegistryAuthSupplier;
-import com.spotify.docker.client.auth.MultiRegistryAuthSupplier;
-import com.spotify.docker.client.auth.gcr.ContainerRegistryAuthSupplier;
-import com.spotify.docker.client.exceptions.DockerCertificateException;
-import com.spotify.docker.client.exceptions.DockerException;
-import com.spotify.docker.client.messages.Container;
-import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.ExecCreation;
-import com.spotify.docker.client.messages.HostConfig;
-import com.spotify.docker.client.messages.ProgressMessage;
+import init.EntryPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.Conf;
 
 /**
  * Implementation of platform abstract class to give support for VirtualBox
@@ -42,7 +22,7 @@ public class DockerManager {
      */
     private final static int STOP_GRACE_PERIOD_SECONDS = 10;
 
-    private final static String REGISTRY_FQDN = EntryPoint.dotenv.get("DOCKER_REGISTRY_FQDN");
+    private final static String REGISTRY_FQDN = Conf.REGISTRY_FQDN;
 
     /**
      * Docker client that will communicate with the daemon. It is built from
@@ -68,7 +48,7 @@ public class DockerManager {
     }
 
     public void testPrivateRegistryConnection() throws Exception{
-        docker.pull(REGISTRY_FQDN+"/"+EntryPoint.dotenv.get("EMPTY_IMAGE_NAME"));
+        docker.pull(REGISTRY_FQDN + "/" + Conf.EMPTY_IMAGE_NAME);
     }
 
 //    /**
@@ -154,13 +134,9 @@ public class DockerManager {
 //     * Sends a start message to the platform
 //     * @param image Image to be started
 //     */
-//    public void startExecution(ImageCopy image) throws PlatformOperationException {
-//        try {
-//            docker.startContainer(image.getPlatformExecutionID());
-//        } catch (DockerException | InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    public void startExecution(String imageId) throws Exception {
+        docker.startContainer(imageId);
+    }
 //
 //    /**
 //     * Changes VM configuration

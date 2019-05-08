@@ -1,15 +1,17 @@
+package init;
+
 import exceptions.AgentExecutionException;
+import execution.DockerManager;
+import execution.SQSManager;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import persistence.CrudService;
+import util.Conf;
 
 public class EntryPoint {
 
     final static Logger logger = LoggerFactory.getLogger(EntryPoint.class);
-
-    //Initialize env vars with .env
-    public final static Dotenv dotenv = Dotenv.load();
 
     public static void main(String[] args) {
         initializeAgent();
@@ -25,7 +27,7 @@ public class EntryPoint {
             logger.info("Registry contacted successfully");
 
             //Create connection to the queue
-            SQSManager sqsManager = new SQSManager(dotenv.get("QUEUE_URL"));
+            SQSManager sqsManager = new SQSManager(Conf.QUEUE_URL);
             logger.info("Connected successfully to queue");
 
             //Test Mongo DB connection

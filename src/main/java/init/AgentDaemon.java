@@ -1,19 +1,21 @@
+package init;
+
 import exceptions.AgentExecutionException;
+import execution.DockerManager;
+import execution.InstanceCoordinator;
+import execution.SQSManager;
 import models.Instance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.sqs.model.Message;
-import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
-import software.amazon.awssdk.services.sqs.model.MessageSystemAttributeName;
 import util.EPJson;
-
-import java.util.Map;
+import util.IaaSConstants;
 
 public class AgentDaemon {
 
     final static Logger logger = LoggerFactory.getLogger(AgentDaemon.class);
 
-    private DockerManager dockerManager;
+    private InstanceCoordinator instanceCoordinator;
 
     private SQSManager sqsManager;
 
@@ -21,7 +23,7 @@ public class AgentDaemon {
 
     public AgentDaemon(SQSManager sqsManager, DockerManager dockerManager){
         this.sqsManager = sqsManager;
-        this.dockerManager = dockerManager;
+        this.instanceCoordinator = InstanceCoordinator.getInstance(dockerManager);
     }
 
     public void execute() throws Exception {
@@ -34,28 +36,18 @@ public class AgentDaemon {
 
                 String action = newMessage.attributesAsStrings().get("MessageGroupId");
                 Instance instance = EPJson.objectAs(newMessage.body(), Instance.class);
-//                System.out.println(instance.getCores());
-//                System.out.println(instance.getMemory());
-//                System.out.println(instance.getRam());
-                System.out.println(instance.getId());
 
-                System.out.println();
-//                System.out.println(newMessage.attributes());
+                switch (action) {
+                    case IaaSConstants.START_INSTANCE:
+                        instanceCoordinator.startInstance(instance);
+                        break;
+                    case IaaSConstants.STOP_INSTANCE:
+//                        oos.writeObject(attendPhysicalMachineOperation(clouderServerRequest));
+                        break;
+                    default:
+                        throw new Exception("The requested operation is not yet supported.");
+                }
 
-//                switch (clouderServerRequest.getMainOp()) {
-//            case UnaCloudAbstractMessage.EXECUTION_OPERATION:
-//                oos.writeObject(attendExecutionOperation(clouderServerRequest,ois,oos));
-//                break;
-//            case UnaCloudAbstractMessage.PHYSICAL_MACHINE_OPERATION:
-//                oos.writeObject(attendPhysicalMachineOperation(clouderServerRequest));
-//                break;
-//            case UnaCloudAbstractMessage.AGENT_OPERATION:
-//                oos.writeObject(attendAgentOperation(clouderServerRequest));
-//                break;
-//            default:
-//                throw new Exception("The requested operation is not yet supported.");
-//                break;
-//        }
             } catch (Exception ex) {
                 logger.error("Error at execution time, will restart agent.", ex);
                 throw new AgentExecutionException(ex.getLocalizedMessage());
