@@ -7,6 +7,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest;
 import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageResponse;
@@ -38,7 +39,7 @@ public class SQSManager {
         ReceiveMessageRequest receiveMessageRequest = ReceiveMessageRequest.builder()
                 .queueUrl(this.queueUrl)
                 .maxNumberOfMessages(1)
-                .visibilityTimeout(10)
+                .visibilityTimeout(20)
                 .attributeNamesWithStrings("MessageGroupId")
                 .build();
 
@@ -50,5 +51,14 @@ public class SQSManager {
         } else {
             return null;
         }
+    }
+
+    public void deleteMessage(String queueUrl, String messageReceiptHandle){
+        DeleteMessageRequest dmr = DeleteMessageRequest
+                .builder()
+                .queueUrl(queueUrl)
+                .receiptHandle(messageReceiptHandle)
+                .build();
+        sqsClient.deleteMessage(dmr);
     }
 }

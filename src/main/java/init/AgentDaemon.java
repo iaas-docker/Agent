@@ -8,6 +8,7 @@ import models.Instance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.sqs.model.Message;
+import util.Conf;
 import util.EPJson;
 import util.IaaSConstants;
 
@@ -47,6 +48,8 @@ public class AgentDaemon {
                     default:
                         throw new Exception("The requested operation is not yet supported.");
                 }
+
+                sqsManager.deleteMessage(Conf.QUEUE_URL, newMessage.receiptHandle());
 
             } catch (Exception ex) {
                 logger.error("Error at execution time, will restart agent.", ex);
