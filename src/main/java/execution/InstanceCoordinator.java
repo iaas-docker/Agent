@@ -24,14 +24,18 @@ public class InstanceCoordinator {
 
     public void startInstance(Instance instance) throws Exception{
         Image actualImage = imageCrud.findById(instance.getImageId());
+        DockerImage dockerImage = dockerImageCrud.findById(actualImage.getBackedById());
 
-        dockerImageCrud.findById(actualImage)
+        dockerManager.pullImage(dockerImage.getTag());
 
-        dockerManager.startExecution(Conf.REGISTRY_FQDN +"/"+ instance.getImageId());
-        instance.setState("STARTED");
+        String containerId = dockerManager.createContainer(dockerImage.getTag());
+
+        dockerManager.startExecution(containerId);
+        instance.setState(Conf.STARTED);
+        instance.setContainerId(containerId);
 
         if (! instance.getImageId().equals(instance.getBaseImageId() ) ){
-            System.out.println("delete from repo");
+            //TODO: Delete image from repo
         }
     }
 

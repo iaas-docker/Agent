@@ -3,10 +3,16 @@ package execution;
 import auth.PortusAuthSupplier;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.messages.ContainerConfig;
+import com.spotify.docker.client.messages.ContainerCreation;
+import com.spotify.docker.client.messages.HostConfig;
+import com.spotify.docker.client.messages.NetworkConfig;
 import init.EntryPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.Conf;
+
+import java.io.*;
 
 /**
  * Implementation of platform abstract class to give support for VirtualBox
@@ -45,6 +51,30 @@ public class DockerManager {
             logger.error("Error connecting to local Docker daemon.");
             System.exit(1);
         }
+    }
+
+    /**
+     * Builds the image and creates a container with it.
+     * Sets the execution ID of image
+     * @param imageId
+     * @return
+     * @throws Exception
+     */
+    public String createContainer(String imageId) throws Exception{
+        HostConfig hostCfg = HostConfig.builder().publishAllPorts(true).build();
+        ContainerConfig containerCfg = ContainerConfig.builder().image(imageId).hostConfig(hostCfg).build();
+        final ContainerCreation container = docker.createContainer(containerCfg);
+        return container.id();
+    }
+
+    public void startExecution(String imageId) throws Exception {
+        docker.startContainer(imageId);
+        logger.info("Started instance: {}", imageId);
+    }
+
+    public void pullImage(String imageTag) throws Exception{
+        docker.pull(imageTag);
+        logger.info("Pulled instance: {}", imageTag);
     }
 
     public void testPrivateRegistryConnection() throws Exception{
@@ -130,13 +160,8 @@ public class DockerManager {
 //        }
 //    }
 //
-//    /**
-//     * Sends a start message to the platform
-//     * @param image Image to be started
-//     */
-    public void startExecution(String imageId) throws Exception {
-        docker.startContainer(imageId);
-    }
+
+
 //
 //    /**
 //     * Changes VM configuration

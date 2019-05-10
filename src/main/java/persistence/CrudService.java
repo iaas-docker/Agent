@@ -59,7 +59,7 @@ public class CrudService<T extends IdObject> {
      * @return Object found or null if not found
      */
     public T findById(String id) {
-        return collection().findOne( EPJson.object("_id", id).toString() ).as(clazz);
+        return collection().findOne( new ObjectId(id) ).as(clazz);
     }
 
     /**

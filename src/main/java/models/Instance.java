@@ -2,7 +2,7 @@ package models;
 
 public class Instance extends IdObject {
 
-    private String name, imageId, userId, baseImageId, state, stateMessage, ipAddressId, physicalMachineId;
+    private String name, imageId, userId, baseImageId, state, stateMessage, ipAddressId, physicalMachineId, containerId;
     private Integer cores, ram, memory;
 
     public String getName() {
@@ -91,5 +91,13 @@ public class Instance extends IdObject {
 
     public void setMemory(Integer memory) {
         this.memory = memory;
+    }
+
+    public String getContainerId() {
+        return containerId;
+    }
+
+    public void setContainerId(String containerId) {
+        this.containerId = containerId;
     }
 }

@@ -15,6 +15,9 @@ public class Conf {
     public static final String EMPTY_IMAGE_NAME = dotenv.get("EMPTY_IMAGE_NAME");
     public static final String QUEUE_URL = dotenv.get("QUEUE_URL");
 
+    //Instance states
+    public static final String STARTED = "STARTED";
+
 
 
 }
