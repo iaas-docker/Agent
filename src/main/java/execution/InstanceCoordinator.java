@@ -67,6 +67,30 @@ public class InstanceCoordinator {
         instance.setState(Conf.DELETED);
         instance.setStateMessage(Conf.DELETED_MESSAGE);
         instanceCrud.update(instance.getId(), instance);
+
+        PhysicalMachine physicalMachine = physicalMachineCrud.findById(instance.getPhysicalMachineId());
+        physicalMachine.setFreeCores(physicalMachine.getFreeCores() + instance.getCores());
+        physicalMachine.setFreeRam(physicalMachine.getFreeRam() + instance.getRam());
+        physicalMachine.setFreeMemory(physicalMachine.getFreeMemory() + instance.getMemory());
+        physicalMachineCrud.update(physicalMachine.getId(), physicalMachine);
+    }
+
+    public void restartInstance(Instance instance) {
+        try {
+            instance.setState(Conf.RESTARTING);
+            instance.setStateMessage(Conf.RESTARTING_MESSAGE);
+            instanceCrud.update(instance.getId(), instance);
+
+            dockerManager.restartContainer(instance.getContainerId());
+
+            instance.setState(Conf.STARTED);
+            instance.setStateMessage(Conf.STARTED_MESSAGE);
+            instanceCrud.update(instance.getId(), instance);
+        } catch (Exception e){
+          logger.error("Error restarting instance", e);
+            instance.setStateMessage(e.getLocalizedMessage());
+            instanceCrud.update(instance.getId(), instance);
+        }
     }
 
     public static InstanceCoordinator getInstance(DockerManager dm){

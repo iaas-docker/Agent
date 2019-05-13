@@ -128,19 +128,15 @@ public class DockerManager {
     public void removeContainer(String containerId) throws Exception {
         docker.removeContainer(containerId);
     }
-//
-//    /**
-//     * Sends a reset message to the platform
-//     * @param image Image to be restarted
-//     */
-//    public void restartExecution(ImageCopy image) throws PlatformOperationException {
-//        try {
-//            docker.restartContainer(image.getPlatformExecutionID(), Docker.STOP_GRACE_PERIOD_SECONDS);
-//        } catch (DockerException | InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
+
+    /**
+     *
+     * @param containerId
+     * @throws Exception
+     */
+    public void restartContainer(String containerId) throws Exception {
+        docker.restartContainer(containerId, Conf.STOP_GRACE_PERIOD_SECONDS);
+    }
 
 
 //

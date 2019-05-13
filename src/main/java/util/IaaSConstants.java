@@ -12,5 +12,6 @@ public class IaaSConstants {
     public static final String START_INSTANCE = "START";
     public static final String STOP_INSTANCE  = "STOP";
     public static final String DELETE_INSTANCE = "DELETE";
+    public static final String RESTART_INSTANCE = "RESTART";
 
 }

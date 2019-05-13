@@ -18,10 +18,12 @@ public class Conf {
     //Instance states
     public static final String STARTED = "STARTED";
     public static final String DELETED = "DELETED";
+    public static final String RESTARTING = "RESTARTING";
 
     //Instance states messages
     public static final String STARTED_MESSAGE = "Instance successfully started";
     public static final String DELETED_MESSAGE = "Instance successfully deleted";
+    public static final String RESTARTING_MESSAGE = "Instance restarting";
 
 
     //Amount of exposed ports

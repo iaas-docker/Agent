@@ -24,11 +24,11 @@ public class EntryPoint {
 
             //Validate docker registry is reachable
             dockerManager.testPrivateRegistryConnection();
-            logger.info("Registry contacted successfully");
+            logger.info("Connected successfully registry");
 
             //Create connection to the queue
             SQSManager sqsManager = new SQSManager(Conf.QUEUE_URL);
-            logger.info("Connected successfully to queue");
+            logger.info("Connected successfully to SQS queue");
 
             //Test Mongo DB connection
             CrudService.testConnection();
