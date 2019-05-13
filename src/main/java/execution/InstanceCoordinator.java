@@ -3,9 +3,13 @@ package execution;
 import models.DockerImage;
 import models.Image;
 import models.Instance;
+import models.PhysicalMachine;
 import persistence.CrudService;
 import util.Conf;
 import util.IaaSConstants;
+import util.PortRangeAssigner;
+
+import java.util.List;
 
 public class InstanceCoordinator {
 
@@ -21,14 +25,20 @@ public class InstanceCoordinator {
     private static CrudService<DockerImage> dockerImageCrud =
             new CrudService<>(IaaSConstants.DOCKER_IMAGE_COLLECTION, DockerImage.class);
 
+    private static CrudService<PhysicalMachine> physicalMachineCrud =
+            new CrudService<>(IaaSConstants.PHYSICAL_COLLECTION, PhysicalMachine.class);
+
 
     public void startInstance(Instance instance) throws Exception{
         Image actualImage = imageCrud.findById(instance.getImageId());
         DockerImage dockerImage = dockerImageCrud.findById(actualImage.getBackedById());
+        PhysicalMachine physicalMachine = physicalMachineCrud.findById(instance.getPhysicalMachineId());
+        List<Integer> assignedRanges = physicalMachine.getAssignedRanges();
+        Integer rangeStart = PortRangeAssigner.getPortRange(assignedRanges);
 
         dockerManager.pullImage(dockerImage.getTag());
 
-        String containerId = dockerManager.createContainer(dockerImage.getTag());
+        String containerId = dockerManager.createContainer(dockerImage.getTag(), rangeStart);
 
         dockerManager.startExecution(containerId);
 
@@ -36,6 +46,10 @@ public class InstanceCoordinator {
         instance.setStateMessage(Conf.STARTED_MESSAGE);
         instance.setContainerId(containerId);
         instanceCrud.update(instance.getId(), instance);
+
+        assignedRanges.add(rangeStart);
+        physicalMachine.setAssignedRanges(assignedRanges);
+        physicalMachineCrud.update(physicalMachine.getId(), physicalMachine);
 
         if (! instance.getImageId().equals(instance.getBaseImageId() ) ){
             //TODO: Delete image from repo

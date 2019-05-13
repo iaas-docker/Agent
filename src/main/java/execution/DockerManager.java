@@ -57,24 +57,29 @@ public class DockerManager {
     /**
      * Builds the image and creates a container with it.
      * Sets the execution ID of image
-     * @param imageId
+     * @param containerCfg
      * @return
      * @throws Exception
      */
-    public String createContainer(String imageId) throws Exception{
+    public String createContainer(String imageId, Integer basePort) throws Exception{
+        ContainerConfig containerCfg = createContainerConfig(imageId, basePort);
+        final ContainerCreation container = docker.createContainer(containerCfg);
+        return container.id();
+    }
+
+    private ContainerConfig createContainerConfig(String imageId, Integer basePort){
         Map<String, List<PortBinding>> map = new HashMap<>();
 
-        //Port is host port
-        Integer basePort = 10000;
+        List<String> exposedPorts = new ArrayList<>();
 
-        List<String> ports = new ArrayList<>();
-        ports.add(String.valueOf("22"));
-
+        //Exposing SSH
+        exposedPorts.add(String.valueOf("22"));
         map.put("22", Arrays.asList( PortBinding.of( "", basePort ) ) );
+
         for (int i = 1; i < Conf.AMOUNT_EXPOSED_PORTS; i++) {
             String port = String.valueOf(basePort + i);
             map.put(port, Arrays.asList( PortBinding.of( "", port ) ) );
-            ports.add(port);
+            exposedPorts.add(port);
         }
 
         HostConfig hostCfg = HostConfig.builder()
@@ -84,11 +89,10 @@ public class DockerManager {
 
         ContainerConfig containerCfg = ContainerConfig.builder()
                 .image(imageId)
-                .exposedPorts( ports.stream().toArray(String[]::new) )
+                .exposedPorts( exposedPorts.stream().toArray(String[]::new) )
                 .hostConfig(hostCfg)
                 .build();
-        final ContainerCreation container = docker.createContainer(containerCfg);
-        return container.id();
+        return containerCfg;
     }
 
     public void startExecution(String imageId) throws Exception {

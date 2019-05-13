@@ -16,6 +16,7 @@ public class PortRangeAssigner {
     /**
      *
      * @param assignedRanges, is not null
+     * @return
      */
     public static Integer getPortRange(List<Integer> assignedRanges){
         assignedRanges.add(START_PORT);
