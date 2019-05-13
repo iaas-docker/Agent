@@ -33,12 +33,12 @@ public class InstanceCoordinator {
         Image actualImage = imageCrud.findById(instance.getImageId());
         DockerImage dockerImage = dockerImageCrud.findById(actualImage.getBackedById());
         PhysicalMachine physicalMachine = physicalMachineCrud.findById(instance.getPhysicalMachineId());
-        List<Integer> assignedRanges = physicalMachine.getAssignedRanges();
-        Integer rangeStart = PortRangeAssigner.getPortRange(assignedRanges);
+
+        List<Integer> assignedRanges = PortRangeAssigner.getPortRange(physicalMachine.getAssignedRanges());
 
         dockerManager.pullImage(dockerImage.getTag());
 
-        String containerId = dockerManager.createContainer(dockerImage.getTag(), rangeStart);
+        String containerId = dockerManager.createContainer(dockerImage.getTag(), assignedRanges.get(assignedRanges.size()-1));
 
         dockerManager.startExecution(containerId);
 
@@ -47,7 +47,6 @@ public class InstanceCoordinator {
         instance.setContainerId(containerId);
         instanceCrud.update(instance.getId(), instance);
 
-        assignedRanges.add(rangeStart);
         physicalMachine.setAssignedRanges(assignedRanges);
         physicalMachineCrud.update(physicalMachine.getId(), physicalMachine);
 

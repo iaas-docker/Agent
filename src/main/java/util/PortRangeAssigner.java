@@ -4,9 +4,7 @@ import javax.net.ServerSocketFactory;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class PortRangeAssigner {
 
@@ -18,15 +16,16 @@ public class PortRangeAssigner {
      * @param assignedRanges, is not null
      * @return
      */
-    public static Integer getPortRange(List<Integer> assignedRanges){
+    public static List<Integer> getPortRange(List<Integer> assignedRanges){
         assignedRanges.add(START_PORT);
-        Collections.sort(assignedRanges);
-        Integer startRange = assignedRanges.get(assignedRanges.size()-1) + AMOUNT_RANGE;
+        TreeSet<Integer> rangesSet = new TreeSet<>(assignedRanges);
+        Integer startRange = rangesSet.last() + AMOUNT_RANGE;
         while (!isPortRangeAvailable(startRange, startRange + AMOUNT_RANGE)){
             startRange += AMOUNT_RANGE;
         }
+        rangesSet.add(startRange);
         System.out.println(startRange);
-        return startRange;
+        return new ArrayList<> (rangesSet);
     }
 
     /**
