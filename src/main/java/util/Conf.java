@@ -17,11 +17,17 @@ public class Conf {
 
     //Instance states
     public static final String STARTED = "STARTED";
+    public static final String DELETED = "DELETED";
 
     //Instance states messages
     public static final String STARTED_MESSAGE = "Instance successfully started";
+    public static final String DELETED_MESSAGE = "Instance successfully deleted";
 
 
     //Amount of exposed ports
     public static final Integer AMOUNT_EXPOSED_PORTS = 100;
+
+    //Container stop period
+    public static final Integer STOP_GRACE_PERIOD_SECONDS= 15;
+
 }

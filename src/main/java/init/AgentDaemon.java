@@ -44,10 +44,14 @@ public class AgentDaemon {
 
                 switch (action) {
                     case IaaSConstants.START_INSTANCE:
+                        logger.info("Starting instance {}", instance.getId());
                         instanceCoordinator.startInstance(instance);
                         break;
                     case IaaSConstants.STOP_INSTANCE:
-
+                        break;
+                    case IaaSConstants.DELETE_INSTANCE:
+                        logger.info("Deleting instance {}", instance.getId());
+                        instanceCoordinator.deleteInstance(instance);
                         break;
                     default:
                         throw new Exception("The requested operation is not yet supported.");

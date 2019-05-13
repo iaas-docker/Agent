@@ -109,78 +109,25 @@ public class DockerManager {
         docker.pull(REGISTRY_FQDN + "/" + Conf.EMPTY_IMAGE_NAME);
     }
 
-    public String sup(String subnet, String ipRange, String gateway) throws Exception{
-        Ipam ipam = Ipam.builder().config(singletonList( IpamConfig.create(subnet, ipRange, gateway) )).driver("").build();
-        NetworkConfig networkCfg = NetworkConfig.builder().ipam(ipam).build();
-        return docker.createNetwork(networkCfg).id();
+    /**
+     * Sends a stop command to the platform
+     * @param containerId
+     * @throws Exception
+     */
+    public void stopExecution(String containerId) throws Exception {
+        docker.stopContainer(containerId, Conf.STOP_GRACE_PERIOD_SECONDS);
     }
 
-//    /**
-//     * Sends a stop command to the platform
-//     * @param image Image copy to be stopped
-//     */
-//    public void stopExecution(ImageCopy image){
-//        try {
-//            docker.stopContainer(image.getPlatformExecutionID(), Docker.STOP_GRACE_PERIOD_SECONDS);
-//        } catch (DockerException | InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    /**
-//     * Builds the image and creates a container with it.
-//     * Sets the execution ID of image
-//     * @param image Image copy to be registered
-//     */
-//    public void registerImage(ImageCopy image){
-//        // TODO handle network/ports
-//        try {
-//            // Loads any accompanying tar files that were created with the "docker save" command
-//            File[] images = image.getMainFile().getAbsoluteFile().getParentFile().listFiles(new FileFilter() {
-//
-//                public boolean accept(File pathname) {
-//                    return pathname.isFile() && pathname.getName().endsWith(".tar");
-//                }
-//            });
-//
-//            for(File savedImage : images) {
-//                InputStream imagePayload = new BufferedInputStream(new FileInputStream(savedImage));
-//                docker.load(imagePayload);
-//            }
-//
-//            // Attemps to create image from Dockerfile, has no effect if daemon already has the image
-//            String imageID = docker.build(image.getMainFile().toPath().getParent(), null, image.getMainFile().getName(),
-//                    new ProgressHandler() {
-//
-//                        public void progress(ProgressMessage arg0) throws DockerException {
-//                            // Empty on purpose
-//                        }
-//                    },
-//                    new DockerClient.BuildParam[]{});
-//
-//            // Publish all exposed ports to host
-//            HostConfig hostCfg = HostConfig.builder().publishAllPorts(true).build();
-//
-//            // Set the image id and host configs
-//            ContainerConfig contCfg = ContainerConfig.builder().image(imageID).hostConfig(hostCfg).build();
-//            image.setPlatformExecutionID(docker.createContainer(contCfg).id());
-//        } catch (DockerException | InterruptedException | IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    /**
-//     * Removes the container. The container must be stopped before it can be
-//     * removed.
-//     * @param image Image copy to be unregistered
-//     */
-//    public void unregisterImage(ImageCopy image){
-//        try {
-//            docker.removeContainer(image.getPlatformExecutionID());
-//        } catch (DockerException | InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//    }
+
+    /**
+     * Removes the container. The container must be stopped before it can be
+     * removed.
+     * @param containerId
+     * @throws Exception
+     */
+    public void removeContainer(String containerId) throws Exception {
+        docker.removeContainer(containerId);
+    }
 //
 //    /**
 //     * Sends a reset message to the platform

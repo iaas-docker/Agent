@@ -3,7 +3,7 @@ package models;
 public class Instance extends IdObject {
 
     private String imageId, userId, baseImageId, state, stateMessage, ipAddressId, physicalMachineId, containerId;
-    private Integer cores, ram, memory;
+    private Integer cores, ram, memory, portRangeStart;
 
 
     public String getImageId() {
@@ -92,5 +92,13 @@ public class Instance extends IdObject {
 
     public void setContainerId(String containerId) {
         this.containerId = containerId;
+    }
+
+    public Integer getPortRangeStart() {
+        return portRangeStart;
+    }
+
+    public void setPortRangeStart(Integer portRangeStart) {
+        this.portRangeStart = portRangeStart;
     }
 }

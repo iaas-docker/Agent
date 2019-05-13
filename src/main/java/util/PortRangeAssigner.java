@@ -24,7 +24,6 @@ public class PortRangeAssigner {
             startRange += AMOUNT_RANGE;
         }
         rangesSet.add(startRange);
-        System.out.println(startRange);
         return new ArrayList<> (rangesSet);
     }
 
