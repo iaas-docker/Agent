@@ -3,16 +3,17 @@ package execution;
 import auth.PortusAuthSupplier;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.ContainerCreation;
-import com.spotify.docker.client.messages.HostConfig;
-import com.spotify.docker.client.messages.NetworkConfig;
+import com.spotify.docker.client.messages.*;
 import init.EntryPoint;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.Conf;
 
 import java.io.*;
+import java.util.*;
+
+import static java.util.Collections.singletonList;
 
 /**
  * Implementation of platform abstract class to give support for VirtualBox
@@ -61,8 +62,31 @@ public class DockerManager {
      * @throws Exception
      */
     public String createContainer(String imageId) throws Exception{
-        HostConfig hostCfg = HostConfig.builder().publishAllPorts(true).build();
-        ContainerConfig containerCfg = ContainerConfig.builder().image(imageId).hostConfig(hostCfg).build();
+        Map<String, List<PortBinding>> map = new HashMap<>();
+
+        //Port is host port
+        Integer basePort = 10000;
+
+        List<String> ports = new ArrayList<>();
+        ports.add(String.valueOf("22"));
+
+        map.put("22", Arrays.asList( PortBinding.of( "", basePort ) ) );
+        for (int i = 1; i < Conf.AMOUNT_EXPOSED_PORTS; i++) {
+            String port = String.valueOf(basePort + i);
+            map.put(port, Arrays.asList( PortBinding.of( "", port ) ) );
+            ports.add(port);
+        }
+
+        HostConfig hostCfg = HostConfig.builder()
+                .portBindings(map)
+//                .cpuQuota().memory()
+                .build();
+
+        ContainerConfig containerCfg = ContainerConfig.builder()
+                .image(imageId)
+                .exposedPorts( ports.stream().toArray(String[]::new) )
+                .hostConfig(hostCfg)
+                .build();
         final ContainerCreation container = docker.createContainer(containerCfg);
         return container.id();
     }
@@ -79,6 +103,12 @@ public class DockerManager {
 
     public void testPrivateRegistryConnection() throws Exception{
         docker.pull(REGISTRY_FQDN + "/" + Conf.EMPTY_IMAGE_NAME);
+    }
+
+    public String sup(String subnet, String ipRange, String gateway) throws Exception{
+        Ipam ipam = Ipam.builder().config(singletonList( IpamConfig.create(subnet, ipRange, gateway) )).driver("").build();
+        NetworkConfig networkCfg = NetworkConfig.builder().ipam(ipam).build();
+        return docker.createNetwork(networkCfg).id();
     }
 
 //    /**

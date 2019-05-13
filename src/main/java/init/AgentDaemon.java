@@ -12,6 +12,8 @@ import util.Conf;
 import util.EPJson;
 import util.IaaSConstants;
 
+import java.util.Date;
+
 public class AgentDaemon {
 
     final static Logger logger = LoggerFactory.getLogger(AgentDaemon.class);
@@ -32,6 +34,8 @@ public class AgentDaemon {
             try {
                 Message newMessage = sqsManager.receiveSingleMessage();
                 if (newMessage == null) {
+                    logger.info("{} No messages available", System.currentTimeMillis());
+                    Thread.sleep(3000);
                     continue;
                 }
 
@@ -43,7 +47,7 @@ public class AgentDaemon {
                         instanceCoordinator.startInstance(instance);
                         break;
                     case IaaSConstants.STOP_INSTANCE:
-//                        oos.writeObject(attendPhysicalMachineOperation(clouderServerRequest));
+
                         break;
                     default:
                         throw new Exception("The requested operation is not yet supported.");

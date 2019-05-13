@@ -18,6 +18,10 @@ public class Conf {
     //Instance states
     public static final String STARTED = "STARTED";
 
+    //Instance states messages
+    public static final String STARTED_MESSAGE = "Instance successfully started";
 
 
+    //Amount of exposed ports
+    public static final Integer AMOUNT_EXPOSED_PORTS = 100;
 }

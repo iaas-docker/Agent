@@ -31,8 +31,11 @@ public class InstanceCoordinator {
         String containerId = dockerManager.createContainer(dockerImage.getTag());
 
         dockerManager.startExecution(containerId);
+
         instance.setState(Conf.STARTED);
+        instance.setStateMessage(Conf.STARTED_MESSAGE);
         instance.setContainerId(containerId);
+        instanceCrud.update(instance.getId(), instance);
 
         if (! instance.getImageId().equals(instance.getBaseImageId() ) ){
             //TODO: Delete image from repo

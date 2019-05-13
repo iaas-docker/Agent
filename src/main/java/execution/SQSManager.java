@@ -43,7 +43,6 @@ public class SQSManager {
                 .attributeNamesWithStrings("MessageGroupId")
                 .build();
 
-        ReceiveMessageResponse ss = sqsClient.receiveMessage(receiveMessageRequest);
         List<Message> messages= sqsClient.receiveMessage(receiveMessageRequest).messages();
 
         if (messages.size() == 1){

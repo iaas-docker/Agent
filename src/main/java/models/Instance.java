@@ -2,16 +2,9 @@ package models;
 
 public class Instance extends IdObject {
 
-    private String name, imageId, userId, baseImageId, state, stateMessage, ipAddressId, physicalMachineId, containerId;
+    private String imageId, userId, baseImageId, state, stateMessage, ipAddressId, physicalMachineId, containerId;
     private Integer cores, ram, memory;
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getImageId() {
         return imageId;
