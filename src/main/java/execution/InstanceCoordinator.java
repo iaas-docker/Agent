@@ -1,15 +1,11 @@
 package execution;
 
-import init.AgentDaemon;
-import models.DockerImage;
-import models.Image;
-import models.Instance;
-import models.PhysicalMachine;
+import models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import persistence.CrudService;
 import util.Conf;
-import util.IaaSConstants;
+import util.IaaSActionConstants;
 import util.PortRangeAssigner;
 
 import java.util.List;
@@ -21,26 +17,30 @@ public class InstanceCoordinator {
     final static Logger logger = LoggerFactory.getLogger(InstanceCoordinator.class);
 
     private static CrudService<Instance> instanceCrud =
-            new CrudService<>(IaaSConstants.INSTANCE_COLLECTION, Instance.class);
+            new CrudService<>(IaaSActionConstants.INSTANCE_COLLECTION, Instance.class);
+
+    private static CrudService<User> userCrud =
+            new CrudService<>(IaaSActionConstants.USER_COLLECTION, User.class);
 
     private static CrudService<Image> imageCrud =
-            new CrudService<>(IaaSConstants.IMAGE_COLLECTION, Image.class);
+            new CrudService<>(IaaSActionConstants.IMAGE_COLLECTION, Image.class);
 
     private static CrudService<DockerImage> dockerImageCrud =
-            new CrudService<>(IaaSConstants.DOCKER_IMAGE_COLLECTION, DockerImage.class);
+            new CrudService<>(IaaSActionConstants.DOCKER_IMAGE_COLLECTION, DockerImage.class);
 
     private static CrudService<PhysicalMachine> physicalMachineCrud =
-            new CrudService<>(IaaSConstants.PHYSICAL_COLLECTION, PhysicalMachine.class);
+            new CrudService<>(IaaSActionConstants.PHYSICAL_COLLECTION, PhysicalMachine.class);
 
 
     public void startInstance(Instance instance) throws Exception {
         Image actualImage = imageCrud.findById(instance.getImageId());
         DockerImage dockerImage = dockerImageCrud.findById(actualImage.getBackedById());
         PhysicalMachine physicalMachine = physicalMachineCrud.findById(instance.getPhysicalMachineId());
+        User user = userCrud.findById(instance.getUserId());
 
         List<Integer> assignedRanges = PortRangeAssigner.getPortRange(physicalMachine.getAssignedRanges());
 
-        dockerManager.pullImage(dockerImage.getTag());
+        dockerManager.pullImage(dockerImage.getTag(), user);
 
         String containerId = dockerManager.createContainer(dockerImage.getTag(), assignedRanges.get(assignedRanges.size()-1));
 
@@ -58,6 +58,21 @@ public class InstanceCoordinator {
         if (! instance.getImageId().equals(instance.getBaseImageId() ) ){
             //TODO: Delete image from repo
         }
+    }
+
+    public void stopInstance(Instance instance) throws Exception {
+        dockerManager.stopExecution(instance.getContainerId());
+
+        User user = userCrud.findById(instance.getUserId());
+        String image = dockerManager.commitContainer(instance, user);
+
+        dockerManager.pushContainer(image, user);
+
+        dockerManager.removeContainer(instance.getContainerId());
+
+        instance.setState(Conf.STOPPED);
+        instance.setStateMessage(Conf.STARTED_MESSAGE);
+        instanceCrud.update(instance.getId(), instance);
     }
 
     public void deleteInstance(Instance instance) throws Exception {

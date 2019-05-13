@@ -5,6 +5,7 @@ import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.RegistryAuth;
 import com.spotify.docker.client.messages.RegistryConfigs;
 
+@Deprecated
 public class PortusAuthSupplier implements RegistryAuthSupplier {
 
     @Override

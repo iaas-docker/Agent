@@ -39,7 +39,7 @@ public class SQSManager {
         ReceiveMessageRequest receiveMessageRequest = ReceiveMessageRequest.builder()
                 .queueUrl(this.queueUrl)
                 .maxNumberOfMessages(1)
-                .visibilityTimeout(20)
+                .visibilityTimeout(Conf.DEFAULT_VISIBILITY_SECONDS)
                 .attributeNamesWithStrings("MessageGroupId")
                 .build();
 

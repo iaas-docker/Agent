@@ -1,16 +1,13 @@
 package execution;
 
-import auth.PortusAuthSupplier;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.*;
-import init.EntryPoint;
-import org.apache.commons.lang.StringUtils;
+import models.Instance;
+import models.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.Conf;
-
-import java.io.*;
 import java.util.*;
 
 import static java.util.Collections.singletonList;
@@ -44,7 +41,6 @@ public class DockerManager {
         try {
             docker = DefaultDockerClient
                     .fromEnv()
-                    .registryAuthSupplier(new PortusAuthSupplier())
                     .build();
             logger.info("{}",docker.info());
         } catch (Exception e) {
@@ -57,7 +53,8 @@ public class DockerManager {
     /**
      * Builds the image and creates a container with it.
      * Sets the execution ID of image
-     * @param containerCfg
+     * @param imageId
+     * @param basePort
      * @return
      * @throws Exception
      */
@@ -100,13 +97,14 @@ public class DockerManager {
         logger.info("Started instance: {}", imageId);
     }
 
-    public void pullImage(String imageTag) throws Exception{
-        docker.pull(imageTag);
+    public void pullImage(String imageTag, User user) throws Exception{
+        final RegistryAuth registryAuth = RegistryAuth.builder()
+                .email(user.getEmail())
+                .username(user.getEmail())
+                .password(user.getPortusToken())
+                .build();
+        docker.pull(imageTag, registryAuth);
         logger.info("Pulled instance: {}", imageTag);
-    }
-
-    public void testPrivateRegistryConnection() throws Exception{
-        docker.pull(REGISTRY_FQDN + "/" + Conf.EMPTY_IMAGE_NAME);
     }
 
     /**
@@ -138,19 +136,34 @@ public class DockerManager {
         docker.restartContainer(containerId, Conf.STOP_GRACE_PERIOD_SECONDS);
     }
 
+    public String commitContainer(Instance instance, User user) throws Exception {
+        String namespace = user.getEmail().replace('@', '_');
+        String repository = Conf.REGISTRY_FQDN;
+        String containerFullTag = (repository+ "/" +namespace+ "/" +instance.getId()).toLowerCase();
+        docker.commitContainer(instance.getContainerId(),
+                containerFullTag,
+                "paused",
+                ContainerConfig.builder().build(),
+                "",
+                "");
 
-//
-//    /**
-//     * Changes VM configuration
-//     * @param cores new number of cores for the VM
-//     * @param ram new RAM value for the VM
-//     * @param image Copy to be modified
-//     */
-//    public void configureExecutionHardware(int cores, int ram, ImageCopy image) throws PlatformOperationException {
-//        // TODO implement
-//        System.out.println("TODO Docker:configureExecutionHardware");
-//        //throw new UnsupportedOperationException();
-//    }
+        return containerFullTag;
+    }
+
+    public void pushContainer(String image, User user) throws Exception {
+        final RegistryAuth registryAuth = RegistryAuth.builder()
+                .email(user.getEmail())
+                .username(user.getEmail())
+                .password(user.getPortusToken())
+                .build();
+        docker.push(image, registryAuth);
+    }
+
+    public void testPrivateRegistryConnection() throws Exception{
+        docker.pull(REGISTRY_FQDN + "/" + Conf.EMPTY_IMAGE_NAME);
+    }
+
+
 //
 //    /**
 //     * Executes a command to the VM itself
@@ -174,97 +187,7 @@ public class DockerManager {
 //            e.printStackTrace();
 //        }
 //    }
-//    /**
-//     * Copy a file on the container's filesystem. The path must already exist in the container
-//     * @param image copy in which file will be pasted
-//     * @param destinationRoute route in which file will be pasted
-//     * @param sourceFile file to be copied
-//     */
-//    public void copyFileOnExecution(ImageCopy image, String destinationRoute, File sourceFile) throws PlatformOperationException {
-//        try {
-//            //TODO Create dir
-//            System.out.println("DockerCopyFile: File path= '"+sourceFile.getAbsolutePath()+"' destination= '"+destinationRoute+"'");
-//            docker.copyToContainer(sourceFile.toPath(), image.getPlatformExecutionID(), destinationRoute);
-//        } catch (DockerException | InterruptedException | IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    /**
-//     * Takes a snapshot of the container. Unsuported
-//     * @param image copy of the image that will have the new snapshot
-//     * @param snapshotname
-//     */
-//    public void takeExecutionSnapshot(ImageCopy image,String snapshotname){
-//        System.out.println("TODO Docker:takeExecutionSnapshot");
-//        //throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Deletes a snapshot of the container. Unsuported
-//     * @param image copy of the image to delete its snapshot
-//     * @param snapshotname
-//     */
-//    public void deleteExecutionSnapshot(ImageCopy image,String snapshotname){
-//        System.out.println("TODO Docker:deleteExecutionSnapshot");
-//        //throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Changes the Container's MAC address
-//     * @param image copy to be modified
-//     */
-//    public void changeExecutionMac(ImageCopy image) throws PlatformOperationException {
-//        // TODO implement
-//        System.out.println("TODO Docker:changeExecutionMac");
-//        //throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Restores a container to its snapshot. Unsuported
-//     * @param image copy to be reverted
-//     * @param snapshotname snapshot to which image will be restored
-//     */
-//    public void restoreExecutionSnapshot(ImageCopy image, String snapshotname) throws PlatformOperationException {
-//        System.out.println("TODO Docker:restoreExecutionSnapshot");
-//        //throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Verifies if the container has the specified snapshot. Unsuported
-//     * @param image
-//     * @param snapshotname
-//     */
-//    public boolean existsExecutionSnapshot(ImageCopy image, String snapshotname) throws PlatformOperationException {
-//        System.out.println("TODO Docker:existsExecutionSnapshot");
-//        //throw new UnsupportedOperationException();
-//        return false;
-//    }
-//
-//    /**
-//     * Unregisters all VMs from platform
-//     */
-//    public void unregisterAllVms(){
-//        try {
-//            List<Container> containers = docker.listContainers(ListContainersParam.allContainers());
-//            for(Container c : containers) {
-//                docker.removeContainer(c.id());
-//            }
-//        } catch (DockerException | InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    /**
-//     * Clones an image making a new copy
-//     * @param source source copy
-//     * @param dest empty destination copy
-//     */
-//    public void cloneImage(ImageCopy source, ImageCopy dest) {
-//        dest.setImage(source.getImage());
-//        dest.setMainFile(source.getMainFile());
-//    }
-//
+
 //
 //    public List<Execution> checkExecutions(Collection<Execution> executions) {
 //        List<Container> containers;
@@ -290,25 +213,4 @@ public class DockerManager {
 //    }
 //
 //
-//    public boolean checkExecutionStarted(Execution execution) {
-//        boolean running = false;
-//
-//        Outer: for(int t=0;t<8 && !running;t++){
-//            try {
-//                // Returns only the running containers
-//                List<Container>	containers = docker.listContainers();
-//                for(Container c : containers) {
-//                    if(c.id().equals(execution.getImage().getPlatformExecutionID())) {
-//                        running = true;
-//                        break Outer;
-//                    }
-//                }
-//
-//                Thread.sleep(30000);
-//            } catch (DockerException | InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        return running;
-//    }
 }

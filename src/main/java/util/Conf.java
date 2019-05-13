@@ -18,11 +18,13 @@ public class Conf {
     //Instance states
     public static final String STARTED = "STARTED";
     public static final String DELETED = "DELETED";
+    public static final String STOPPED = "STOPPED";
     public static final String RESTARTING = "RESTARTING";
 
     //Instance states messages
     public static final String STARTED_MESSAGE = "Instance successfully started";
     public static final String DELETED_MESSAGE = "Instance successfully deleted";
+    public static final String STOPPED_MESSAGE = "Instance successfully stopped";
     public static final String RESTARTING_MESSAGE = "Instance restarting";
 
 
@@ -30,6 +32,9 @@ public class Conf {
     public static final Integer AMOUNT_EXPOSED_PORTS = 100;
 
     //Container stop period
-    public static final Integer STOP_GRACE_PERIOD_SECONDS= 15;
+    public static final Integer STOP_GRACE_PERIOD_SECONDS = 30;
+
+
+    public static final Integer DEFAULT_VISIBILITY_SECONDS = 60;
 
 }

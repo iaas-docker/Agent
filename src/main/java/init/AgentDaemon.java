@@ -10,9 +10,7 @@ import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.sqs.model.Message;
 import util.Conf;
 import util.EPJson;
-import util.IaaSConstants;
-
-import java.util.Date;
+import util.IaaSActionConstants;
 
 public class AgentDaemon {
 
@@ -43,17 +41,19 @@ public class AgentDaemon {
                 Instance instance = EPJson.objectAs(newMessage.body(), Instance.class);
 
                 switch (action) {
-                    case IaaSConstants.START_INSTANCE:
+                    case IaaSActionConstants.START_INSTANCE:
                         logger.info("Starting instance {}", instance.getId());
                         instanceCoordinator.startInstance(instance);
                         break;
-                    case IaaSConstants.STOP_INSTANCE:
+                    case IaaSActionConstants.STOP_INSTANCE:
+                        logger.info("Stopping instance {}", instance.getId());
+                        instanceCoordinator.stopInstance(instance);
                         break;
-                    case IaaSConstants.DELETE_INSTANCE:
+                    case IaaSActionConstants.DELETE_INSTANCE:
                         logger.info("Deleting instance {}", instance.getId());
                         instanceCoordinator.deleteInstance(instance);
                         break;
-                    case IaaSConstants.RESTART_INSTANCE:
+                    case IaaSActionConstants.RESTART_INSTANCE:
                         logger.info("Restarting instance {}", instance.getId());
                         instanceCoordinator.restartInstance(instance);
                         break;
