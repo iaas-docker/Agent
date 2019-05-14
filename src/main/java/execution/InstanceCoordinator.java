@@ -71,7 +71,7 @@ public class InstanceCoordinator {
 
         dockerManager.removeContainer(instance.getContainerId());
 
-        DockerImage dockerImage = new DockerImage(tag, "Paused", newDockerImage);
+        DockerImage dockerImage = new DockerImage(tag+":paused", "Paused", newDockerImage);
         dockerImage = dockerImageCrud.create(dockerImage);
         Image image = new Image(Conf.DOCKER_TYPE, dockerImage.getId());
         image = imageCrud.create(image);
