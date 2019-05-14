@@ -4,6 +4,13 @@ public class Image extends IdObject {
 
     private String type, backedById;
 
+    public Image() {}
+
+    public Image(String type, String backedById) {
+        this.type = type;
+        this.backedById = backedById;
+    }
+
     public String getType() {
         return type;
     }

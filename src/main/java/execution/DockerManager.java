@@ -136,17 +136,21 @@ public class DockerManager {
         docker.restartContainer(containerId, Conf.STOP_GRACE_PERIOD_SECONDS);
     }
 
-    public String commitContainer(Instance instance, User user) throws Exception {
-        String namespace = user.getEmail().replace('@', '_');
-        String repository = Conf.REGISTRY_FQDN;
-        String containerFullTag = (repository+ "/" +namespace+ "/" +instance.getId()).toLowerCase();
-        docker.commitContainer(instance.getContainerId(),
-                containerFullTag,
+    public String commitContainer(Instance instance, String tag) throws Exception {
+        String newImageId = docker.commitContainer(instance.getContainerId(),
+                tag,
                 "paused",
                 ContainerConfig.builder().build(),
                 "",
-                "");
+                "").id();
 
+        return newImageId.split(":")[1];
+    }
+
+    public String createContainerTag(Instance instance, User user) {
+        String namespace = user.getEmail().replace('@', '_');
+        String repository = Conf.REGISTRY_FQDN;
+        String containerFullTag = (repository+ "/" +namespace+ "/" +instance.getId()).toLowerCase();
         return containerFullTag;
     }
 

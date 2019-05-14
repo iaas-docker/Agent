@@ -34,7 +34,8 @@ public class Conf {
     //Container stop period
     public static final Integer STOP_GRACE_PERIOD_SECONDS = 30;
 
-
     public static final Integer DEFAULT_VISIBILITY_SECONDS = 60;
+
+    public static final String DOCKER_TYPE = "docker";
 
 }

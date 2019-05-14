@@ -64,15 +64,24 @@ public class InstanceCoordinator {
         dockerManager.stopExecution(instance.getContainerId());
 
         User user = userCrud.findById(instance.getUserId());
-        String image = dockerManager.commitContainer(instance, user);
-
-        dockerManager.pushContainer(image, user);
+        String tag = dockerManager.createContainerTag(instance, user);
+        String newDockerImage = dockerManager.commitContainer(instance, tag);
+        System.out.println(newDockerImage);
+        dockerManager.pushContainer(tag, user);
 
         dockerManager.removeContainer(instance.getContainerId());
 
+        DockerImage dockerImage = new DockerImage(tag, "Paused", newDockerImage);
+        dockerImage = dockerImageCrud.create(dockerImage);
+        Image image = new Image(Conf.DOCKER_TYPE, dockerImage.getId());
+        image = imageCrud.create(image);
+
         instance.setState(Conf.STOPPED);
-        instance.setStateMessage(Conf.STARTED_MESSAGE);
+        instance.setStateMessage(Conf.STOPPED_MESSAGE);
+        instance.setImageId(image.getId());
         instanceCrud.update(instance.getId(), instance);
+
+        freePhysicalResources(instance);
     }
 
     public void deleteInstance(Instance instance) throws Exception {
@@ -83,6 +92,10 @@ public class InstanceCoordinator {
         instance.setStateMessage(Conf.DELETED_MESSAGE);
         instanceCrud.update(instance.getId(), instance);
 
+        freePhysicalResources(instance);
+    }
+
+    private void freePhysicalResources(Instance instance){
         PhysicalMachine physicalMachine = physicalMachineCrud.findById(instance.getPhysicalMachineId());
         physicalMachine.setFreeCores(physicalMachine.getFreeCores() + instance.getCores());
         physicalMachine.setFreeRam(physicalMachine.getFreeRam() + instance.getRam());

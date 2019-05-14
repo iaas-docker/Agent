@@ -4,6 +4,14 @@ public class DockerImage extends IdObject {
 
     private String tag, name, dockerImageId;
 
+    public DockerImage() {}
+
+    public DockerImage(String tag, String name, String dockerImageId) {
+        this.tag = tag;
+        this.name = name;
+        this.dockerImageId = dockerImageId;
+    }
+
     public String getTag() {
         return tag;
     }
