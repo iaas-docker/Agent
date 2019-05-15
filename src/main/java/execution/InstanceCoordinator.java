@@ -58,6 +58,8 @@ public class InstanceCoordinator {
         if (! instance.getImageId().equals(instance.getBaseImageId() ) ){
             //TODO: Delete image from repo
         }
+
+        //Todo: Exec command: docker exec -ti containerId passwd
     }
 
     public void stopInstance(Instance instance) throws Exception {
